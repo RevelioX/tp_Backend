@@ -9,24 +9,26 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @RestController
+@RequestMapping("/api/estaciones")
 public class EstacionesController {
 
   @Autowired
   private EstacionesService service;
 
-  @GetMapping("/estaciones")
-  public List<Estacion> findAllArtist() {
+  @GetMapping
+  public List<Estacion> findAllEstaciones() {
     return service.findAll();
   }
 
-  @GetMapping("/estaciones/{id}")
+  @GetMapping("/{id}")
   public Optional<Estacion> findOneEstacion(@PathVariable int id) {
     return service.findOne(id);
   }
 
-  @PostMapping("/api/estaciones")
+  @PostMapping
   public ResponseEntity<?> addEstacion(@RequestBody Estacion estacion) {
     try {
       service.create(estacion);
@@ -36,7 +38,7 @@ public class EstacionesController {
     }
   }
 
-  @DeleteMapping("/estaciones/{id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<?> deleteEstacion(@PathVariable int id) {
     try {
       service.deleteEstacion(id);
@@ -46,7 +48,7 @@ public class EstacionesController {
     }
   }
 
-  @PutMapping("/api/estaciones")
+  @PutMapping
   public ResponseEntity<?> putEstacion(@RequestParam Estacion estacion) {
     try {
       service.modificarEstacion(estacion);
@@ -56,7 +58,7 @@ public class EstacionesController {
     }
   }
 
-  @GetMapping("/api/estaciones")
+  @GetMapping("/cercana")
   public ResponseEntity<Estacion> getEstacionCercana(@RequestParam(value = "longitud", required = false) Float longitud,
                                                      @RequestParam(value = "latitud", required = false) Float latitud) {
     System.out.println("Arveja");
@@ -70,5 +72,13 @@ public class EstacionesController {
   }
 
   //todo Agregar Endpoint que Ingresen 2 id de estaciones y retorne la distancia entre las dos en mts.
-
+  @GetMapping("/distancia/{id1}/{id2}")
+  public ResponseEntity<?> getDistancia(@PathVariable int id1, @PathVariable int id2){
+    try{
+      Float distancia = service.getDistacia(id1,id2);
+      return ResponseEntity.ok(distancia);
+    }catch (Exception e){
+      return ResponseEntity.status(400).build();
+    }
+  }
 }

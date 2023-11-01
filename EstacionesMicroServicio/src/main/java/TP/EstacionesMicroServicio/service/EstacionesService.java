@@ -56,6 +56,14 @@ public class EstacionesService {
     return estacionCercana;
   }
 
+  public Float getDistacia(int id1,int id2){
+    Estacion estacion1 = repository.getById(id1);
+    Estacion estacion2 = repository.getById(id2);
+
+    Float distancia = estacion1.calcularDistancia(estacion2.getLONGITUD(), estacion2.getLATITUD());
+    return distancia*110000;
+  }
+
 
 
 
