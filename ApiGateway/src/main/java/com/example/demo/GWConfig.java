@@ -39,6 +39,43 @@ public class GWConfig {
     }//todo Faltaria hacer la wea segura, pero los endpoints son estos :P
 
     @Bean
+    public SecurityWebFilterChain filterChain(ServerHttpSecurity http) throws
+            Exception {
+        http.authorizeExchange(exchanges -> exchanges
+                // Esta ruta puede ser accedida por cualquiera, sin autorización
+                        .pathMatchers("/api/estaciones/**")
+                        .permitAll()
+                // Cualquier otra petición...
+
+                .pathMatchers(HttpMethod.POST, "/api/estaciones/**")
+                .hasRole("ADMINISTRADORES")
+                        .anyExchange()
+                        .authenticated()
+
+        ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+        return http.build();
+    }
+
+    @Bean
+    public ReactiveJwtAuthenticationConverter jwtAuthenticationConverter() {
+        var jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
+        var grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        // Se especifica el nombre del claim a analizar
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
+        // Se agrega este prefijo en la conversión por una convención de Spring
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        // Se asocia el conversor de Authorities al Bean que convierte el token JWT a un objeto Authorization
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(
+                new
+                        ReactiveJwtGrantedAuthoritiesConverterAdapter(grantedAuthoritiesConverter));
+        // También se puede cambiar el claim que corresponde al nombre que luego se utilizará en el objeto
+        // Authorization
+        // jwtAuthenticationConverter.setPrincipalClaimName("user_name");
+        return jwtAuthenticationConverter;
+    }
+
+    /*
+    @Bean
     public SecurityWebFilterChain filterChain(ServerHttpSecurity http) throws Exception {
         http.authorizeExchange(exchanges -> exchanges
 
@@ -47,15 +84,13 @@ public class GWConfig {
                         .permitAll()
 
                         // Esta ruta requiere rol "KEMPES_ADMIN" para las solicitudes POST
-                        .pathMatchers(HttpMethod.POST, "/api/entradas/**")
-                        .hasRole("ADMINISTRADOR")
-
-                        .pathMatchers(HttpMethod.GET, "/api/estaciones/cercana")
-                        .permitAll()
-
-                        // Cualquier otra petición...
-                        .anyExchange()
-                        .authenticated()
+//                        .pathMatchers(HttpMethod.POST, "/api/entradas/**")
+//                        .hasRole("ADMINISTRADOR")
+//
+//                        .pathMatchers(HttpMethod.GET, "/api/estaciones/cercana")
+//                        .permitAll()
+                          .anyExchange()
+                          .authenticated()
 
                 ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .csrf(csrf -> csrf.disable());
@@ -82,5 +117,7 @@ public class GWConfig {
         return jwtAuthenticationConverter;
 
     }
+    */
+
 }
 
