@@ -8,6 +8,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -85,5 +86,15 @@ public class TarifaController {
         }
     }
 
+    @GetMapping("/actual")
+    public ResponseEntity<?> obtenerDiaActual() {
+        try {
+            Tarifa tarifa = tarifaService.getTarifaHoy();
+            return ResponseEntity.ok(tarifa);
+        } catch (ResponseStatusException ex) {
+            // Captura la excepción lanzada desde el servicio
+            return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
+        }
+    }
 
 }

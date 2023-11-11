@@ -1,11 +1,17 @@
 package TP.AlquileresMicroServicio.services;
 
+import TP.AlquileresMicroServicio.entities.Alquiler;
 import TP.AlquileresMicroServicio.entities.Tarifa;
+import TP.AlquileresMicroServicio.entities.TarifaPromocion;
+import TP.AlquileresMicroServicio.entities.TarifaSemana;
 import TP.AlquileresMicroServicio.repositories.TarifaRepository;
 import TP.AlquileresMicroServicio.services.interfaces.TarifaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +38,12 @@ public class TarifaServiceImpl implements TarifaService {
 
     @Override
     public void update(Tarifa entity) {
+
+    }
+
+    /*
+    @Override
+    public void update(Tarifa entity) {
         Tarifa tarifa_find = tarifaRepository.findById(entity.getID()).orElse(null);
         if (tarifa_find == null)return;
 
@@ -48,9 +60,34 @@ public class TarifaServiceImpl implements TarifaService {
 
         tarifaRepository.save(tarifa_find);
     }
-
+    */
     @Override
     public void delete(Long aLong) {
         tarifaRepository.deleteById(aLong);
     }
+
+
+    @Override
+    public Tarifa getTarifaHoy() {
+        LocalDate fechaActual = LocalDate.now();
+
+        // Intenta obtener un DiaFestivo para la fecha actual
+        Optional<TarifaPromocion> tarifaPromocion = tarifaRepository.findTarifaPromocionByDiaAndMesAndAnio(
+                fechaActual.getDayOfMonth(), fechaActual.getMonthValue(), fechaActual.getYear());
+
+        // Si existe un Dia Festivo, devuélvelo
+        if (tarifaPromocion.isPresent()) {
+            return tarifaPromocion.get();
+        } else {
+            // Si no hay un DiaFestivo, intenta obtener un DiaSemana para el día de la semana actual
+            Optional<TarifaSemana> tarifaSemanaOptional = tarifaRepository.findTarifaSemanaByDiaSemana(
+                    fechaActual.getDayOfWeek().getValue());
+
+            // Si existe un DiaSemana, devuélvelo, de lo contrario, podrías lanzar una excepción o manejarlo según tus necesidades
+            return tarifaSemanaOptional.orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "No se encontró un DiaSemana para el día actual"
+            ));
+        }
+    }
+
 }

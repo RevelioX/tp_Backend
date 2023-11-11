@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "TARIFAS")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="TIPO_TARIFA",
+        discriminatorType = DiscriminatorType.INTEGER)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tarifa {
@@ -17,17 +20,7 @@ public class Tarifa {
     @Basic
     private Long ID;
     @Basic
-    private Integer TIPO_TARIFA;
-    @Basic
     private String DEFINICION;
-    @Basic
-    private Integer DIA_SEMANA;
-    @Basic
-    private Integer DIA_MES;
-    @Basic
-    private Integer MES;
-    @Basic
-    private Integer ANIO;
     @Basic
     private Double MONTO_FIJO_ALQUILER;
     @Basic
