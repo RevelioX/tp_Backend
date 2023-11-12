@@ -6,8 +6,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDateTime;
+@Data
 @AllArgsConstructor
 public class AlquilerResponse {
 
@@ -17,5 +19,5 @@ public class AlquilerResponse {
     private Long estacionDevolucion;
     private LocalDateTime fechaHoraDevolucion;
     private LocalDateTime fechaHoraRetiro;
-    private Double monto;
+    private double monto;
 }

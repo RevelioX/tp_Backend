@@ -8,6 +8,8 @@ import TP.AlquileresMicroServicio.repositories.TarifaRepository;
 import TP.AlquileresMicroServicio.services.interfaces.AlquilerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -76,31 +78,42 @@ public class AlquilerServiceImpl implements AlquilerService {
     }
 
     public Alquiler finalizarAlquiler(Long alquilerId, Long estacionId){
+        //Tomo la fecha-hora del sistema
         LocalDateTime fecha_hora_ahora = LocalDateTime.now();
+        //Traigo el alquiler y lo guardo en una variable
         Alquiler alquiler = alquilerRepository.findById(alquilerId).orElseThrow();
-
+        //Seteo los datos que ya tengo, estacion y fecha de devolucion
         alquiler.setESTACION_DEVOLUCION(estacionId);
         alquiler.setFECHA_HORA_DEVOLUCION(fecha_hora_ahora);
+        //Cambio el Estado a 2 = Devuelto/Finalizado
         alquiler.setESTADO(2L);
-        //Calcular Monto
-        //Solicito la distancia entre las 2 estaciones
+        //#Calcular Monto#
+            //Solicito la distancia entre las 2 estaciones
         String url = "http://localhost:7070/api/estaciones/distancia/" + alquiler.getESTACION_RETIRO() + "/" + estacionId;
         Float distancia = restTemplate.getForObject(url, Float.class);
         double distanciaValor = (distancia != null) ? distancia : 0.0f;
-        //Obtengo la tarifa que usa el alquiler
+            //Obtengo la tarifa que usa el alquiler
         Tarifa tarifa = alquiler.getTarifa();
+            //Realizo lo 3 calculos que afectan el monto: distancia,tiempo y monto base
         double monto_fijo = tarifa.getMONTO_FIJO_ALQUILER().floatValue();
         double monto_km = tarifa.getMONTO_KM().floatValue() * Math.floor(distanciaValor/1000f);
+            //Separo la cant de hora y la cantidad de minutos que no llegan a la hora.
         long minutosTotales = ChronoUnit.MINUTES.between(alquiler.getFECHA_HORA_RETIRO(),alquiler.getFECHA_HORA_DEVOLUCION());
         long horas = minutosTotales / 60;
         long minutosRestantes = minutosTotales % 60;
+            //Esta linea maneja em monto por hora y el monot por minuto fraccion
         double monto_tiempo = (horas * tarifa.getMONTO_HORA()) +
                 (minutosRestantes > 31 ?
                     tarifa.getMONTO_HORA() : tarifa.getMONTO_MINUTO_FRACCION() * minutosRestantes);
         double monto_total = monto_fijo + monto_km + monto_tiempo;
+        //Seteo el monto
         alquiler.setMONTO(monto_total);
 
         return alquilerRepository.save(alquiler);
 
+    }
+
+    public List<Alquiler> getAlquileresEstado(Long estado){
+        return alquilerRepository.findAlquilerByESTADO(estado);
     }
 }
