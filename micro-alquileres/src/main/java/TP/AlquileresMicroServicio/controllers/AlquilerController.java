@@ -50,7 +50,7 @@ public class AlquilerController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("/id/")
     public ResponseEntity<Alquiler> getAlquilerById(@RequestParam Long id) {
         return alquilerService.getById(id)
                 .map(alquiler -> new ResponseEntity<>(alquiler, HttpStatus.OK))
@@ -100,7 +100,7 @@ public class AlquilerController {
         );
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @GetMapping("/")
+    @GetMapping("/estado/")
     public ResponseEntity<List<Alquiler>> getAlquilerByEstado(@RequestParam Long estado){
 
         List<Alquiler> alquileres = alquilerService.getAlquileresEstado(estado);
